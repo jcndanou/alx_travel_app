@@ -9,7 +9,9 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
-
+# settings.py
+import os
+import environ # Importe le package django-environ
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -37,16 +39,28 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # Mes applications tierces
+    'rest_framework',
+    'corsheaders',
+    # ... tes autres applications
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware', # Ajoute ceci
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+# Configuration CORS Headers
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # Exemple pour une application React/Vue sur localhost:3000
+    "http://127.0.0.1:3000",
+    # Ajoute d'autres origines si nécessaire, ex: "https://tonfrontend.com"
 ]
 
 ROOT_URLCONF = 'alx_travel_app.urls'
@@ -120,3 +134,24 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Initialise django-environ
+env = environ.Env(
+    # Définit les types et valeurs par défaut pour les variables d'environnement
+    DEBUG=(bool, False) # Exemple: DEBUG sera un booléen, False par défaut
+)
+
+# Construit le chemin absolu vers le répertoire de base de ton projet
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Lit le fichier .env
+# env.read_env(os.path.join(BASE_DIR, '.env')) # Ancienne méthode si problème avec la nouvelle
+environ.Env.read_env(os.path.join(BASE_DIR, '.env')) # Nouvelle méthode recommandée
+
+# DATABASE configuration
+DATABASES = {
+    'default': env.db(
+        default='mysql://user:password@host:port/dbname' # Valeur par défaut pour le développement local si .env n'est pas présent
+    )
+}
+# La variable d'environnement sera lue sous la forme DATABASE_URL dans le .env
